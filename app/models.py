@@ -14,7 +14,7 @@ class Prediction(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     url: Mapped[str] = mapped_column(String(2048), index=True)
     is_phishing: Mapped[bool]
-    confidence_score: Mapped[float] = mapped_column(Float)
+    phishing_probability: Mapped[float] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
