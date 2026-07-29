@@ -17,6 +17,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pandas>=3.0.5",
     "pytest>=9.1.1",
     "tldextract>=5.3.1",
@@ -26,3 +27,8 @@ dev = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = ["model_dependent: assertions that depend on the trained model"]
+
+filterwarnings = [
+    "ignore::DeprecationWarning:joblib.*",
+]

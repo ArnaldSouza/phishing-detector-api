@@ -10,12 +10,21 @@ class Settings(BaseSettings):
     postgres_host: str = "localhost"
     postgres_port: int = 5432
 
-    @property
-    def database_url(self) -> str:
+    postgres_test_db: str = "phishing_test_db"
+
+    def _url_for(self, database: str) -> str:
         return (
             f"postgresql+psycopg://{self.postgres_user}:{self.postgres_password}"
-            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+            f"@{self.postgres_host}:{self.postgres_port}/{database}"
         )
+
+    @property
+    def database_url(self) -> str:
+        return self._url_for(self.postgres_db)
+
+    @property
+    def test_database_url(self) -> str:
+        return self._url_for(self.postgres_test_db)
 
 
 settings = Settings()
