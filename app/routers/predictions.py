@@ -7,13 +7,17 @@ from app.database import get_db
 from app.ml.classifier import classify_url
 from app.models import Prediction
 from app.schemas import PredictionRequest, PredictionResponse
+from app.dependencies import get_current_user
+from app.models import Prediction, User
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_prediction(
-    payload: PredictionRequest, db: Session = Depends(get_db)
+    payload: PredictionRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ) -> PredictionResponse:
     """Classify a URL and persist the result.
 
@@ -30,6 +34,7 @@ def create_prediction(
         url=classification.url,
         is_phishing=classification.is_phishing,
         phishing_probability=classification.phishing_probability,
+        user_id=current_user.id,
     )
     db.add(record)
     db.commit()

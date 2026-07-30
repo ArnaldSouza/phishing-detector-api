@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.ml.classifier import load_model
-from app.routers import predictions
+from app.routers import auth, predictions
 
 
 @asynccontextmanager
@@ -19,7 +19,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(title="Phishing Detector API", lifespan=lifespan)
 app.include_router(predictions.router)
-
+app.include_router(auth.router)
+app.include_router(predictions.router)
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
