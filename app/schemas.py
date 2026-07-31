@@ -30,7 +30,6 @@ class PredictionResponse(BaseModel):
     created_at: datetime
 
 
-
 class UserCreate(BaseModel):
     """Registration payload."""
 

@@ -28,9 +28,7 @@ def register_user(payload: UserCreate, db: Session = Depends(get_db)) -> UserRes
     Raises:
         HTTPException: 409 if the email is already registered.
     """
-    user = User(
-        email=payload.email, hashed_password=hash_password(payload.password)
-    )
+    user = User(email=payload.email, hashed_password=hash_password(payload.password))
     db.add(user)
 
     try:

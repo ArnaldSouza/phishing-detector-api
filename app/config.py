@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     postgres_port: int = 5432
 
     postgres_test_db: str = "phishing_test_db"
+    sql_echo: bool = False
 
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"

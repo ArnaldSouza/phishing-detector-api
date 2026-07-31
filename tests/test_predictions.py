@@ -108,4 +108,4 @@ def test_flags_an_obviously_suspicious_hostname(auth_client: TestClient) -> None
     response = auth_client.post(
         ENDPOINT, json={"url": "http://secure-login-paypal-verify.tk"}
     )
-    assert response.json()["phishing_probability"] > 0.5    
+    assert response.json()["phishing_probability"] > 0.5

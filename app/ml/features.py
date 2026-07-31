@@ -29,9 +29,31 @@ FEATURE_NAMES: tuple[str, ...] = (
 # Heuristic prior: this list encodes domain knowledge and may become stale.
 SUSPICIOUS_TLDS: frozenset[str] = frozenset(
     {
-        "tk", "ml", "ga", "cf", "gq", "xyz", "top", "buzz", "click",
-        "link", "work", "live", "icu", "pw", "cc", "su", "online",
-        "site", "fit", "rest", "bar", "cam", "monster", "surf", "quest",
+        "tk",
+        "ml",
+        "ga",
+        "cf",
+        "gq",
+        "xyz",
+        "top",
+        "buzz",
+        "click",
+        "link",
+        "work",
+        "live",
+        "icu",
+        "pw",
+        "cc",
+        "su",
+        "online",
+        "site",
+        "fit",
+        "rest",
+        "bar",
+        "cam",
+        "monster",
+        "surf",
+        "quest",
     }
 )
 
@@ -54,7 +76,7 @@ def extract_hostname(url: str) -> str:
     candidate = url if "://" in url else f"http://{url}"
     hostname = (urlparse(candidate).hostname or "").lower()
     if hostname.startswith(_WWW_PREFIX):
-        return hostname[len(_WWW_PREFIX):]
+        return hostname[len(_WWW_PREFIX) :]
     return hostname
 
 
@@ -64,9 +86,7 @@ def _shannon_entropy(value: str) -> float:
         return 0.0
     total = len(value)
     counts = Counter(value)
-    return -sum(
-        (count / total) * math.log2(count / total) for count in counts.values()
-    )
+    return -sum((count / total) * math.log2(count / total) for count in counts.values())
 
 
 def _has_ip_host(hostname: str) -> bool:

@@ -4,11 +4,10 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.ml.classifier import classify_url
-from app.models import Prediction
-from app.schemas import PredictionRequest, PredictionResponse
 from app.dependencies import get_current_user
+from app.ml.classifier import classify_url
 from app.models import Prediction, User
+from app.schemas import PredictionRequest, PredictionResponse
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
 

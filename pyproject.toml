@@ -24,6 +24,7 @@ dev = [
     "httpx>=0.28.1",
     "pandas>=3.0.5",
     "pytest>=9.1.1",
+    "ruff>=0.16.1",
     "tldextract>=5.3.1",
     "ucimlrepo>=0.0.7",
 ]
@@ -35,4 +36,25 @@ markers = ["model_dependent: assertions that depend on the trained model"]
 
 filterwarnings = [
     "ignore::DeprecationWarning:joblib.*",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/*" = ["E501", "I001"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.Header",
+    "fastapi.File",
+    "fastapi.Form",
 ]

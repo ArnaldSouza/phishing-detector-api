@@ -109,7 +109,7 @@ def report_performance(
 
     print("\nfeature importances:")
     ranked = sorted(
-        zip(FEATURE_NAMES, classifier.feature_importances_),
+        zip(FEATURE_NAMES, classifier.feature_importances_, strict=True),
         key=lambda pair: pair[1],
         reverse=True,
     )

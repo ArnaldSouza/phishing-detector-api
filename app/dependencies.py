@@ -40,4 +40,4 @@ def get_current_user(
     user = db.get(User, user_id)
     if user is None:
         raise credentials_error
-    return user 
+    return user

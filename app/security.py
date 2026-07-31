@@ -1,6 +1,6 @@
 """Password hashing and JWT access token handling."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Final
 
 import bcrypt
@@ -26,9 +26,7 @@ def hash_password(password: str) -> str:
 
 def verify_password(password: str, hashed_password: str) -> bool:
     """Check a plaintext password against a stored bcrypt hash."""
-    return bcrypt.checkpw(
-        password.encode(_ENCODING), hashed_password.encode(_ENCODING)
-    )
+    return bcrypt.checkpw(password.encode(_ENCODING), hashed_password.encode(_ENCODING))
 
 
 def create_access_token(subject: str) -> str:
@@ -40,7 +38,7 @@ def create_access_token(subject: str) -> str:
     Returns:
         Encoded JWT string.
     """
-    expires_at = datetime.now(timezone.utc) + timedelta(
+    expires_at = datetime.now(UTC) + timedelta(
         minutes=settings.access_token_expire_minutes
     )
     payload = {"sub": subject, "exp": expires_at}
