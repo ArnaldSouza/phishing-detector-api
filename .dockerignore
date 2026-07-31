@@ -1,0 +1,12 @@
+.venv
+.git
+.gitignore
+.pytest_cache
+.ruff_cache
+__pycache__
+*.py[cod]
+.env
+ml/data
+docs
+tests
+check_security.py
