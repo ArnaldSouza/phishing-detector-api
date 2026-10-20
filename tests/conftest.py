@@ -4,7 +4,7 @@ from collections.abc import Iterator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session
 
 from app import models  # noqa: F401 — registers models in Base.metadata
@@ -19,11 +19,14 @@ from app.security import create_access_token, hash_password
 def test_engine() -> Iterator[Engine]:
     """Create the schema in the test database once per test session."""
     engine = create_engine(settings.test_database_url)
+
+    with engine.begin() as connection:
+        connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+
     Base.metadata.create_all(bind=engine)
     yield engine
     Base.metadata.drop_all(bind=engine)
     engine.dispose()
-
 
 @pytest.fixture
 def db_session(test_engine: Engine) -> Iterator[Session]:

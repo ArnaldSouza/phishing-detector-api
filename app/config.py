@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     postgres_test_db: str = "phishing_test_db"
     sql_echo: bool = False
 
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.0-flash"
+    gemini_embedding_model: str = "gemini-embedding-001"
+
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30

@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:pg17
     container_name: phishing_db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}

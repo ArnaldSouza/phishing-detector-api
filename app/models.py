@@ -1,7 +1,9 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, String, func
+from sqlalchemy import DateTime, Float, ForeignKey, String, func, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from pgvector.sqlalchemy import Vector
 
 from app.database import Base
 
@@ -10,6 +12,9 @@ MAX_EMAIL_LENGTH = 320
 # bcrypt hashes are 60 characters; the extra room allows migrating algorithms.
 MAX_HASH_LENGTH = 128
 MAX_URL_LENGTH = 2048
+
+EMBEDDING_DIMENSION = 768
+MAX_CASE_TITLE_LENGTH = 200
 
 
 class User(Base):
@@ -46,3 +51,18 @@ class Prediction(Base):
     )
 
     user: Mapped["User"] = relationship(back_populates="predictions")
+
+
+class PhishingCase(Base):
+    """A curated phishing technique used as retrieval context for explanations."""
+
+    __tablename__ = "phishing_cases"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    slug: Mapped[str] = mapped_column(String(MAX_CASE_TITLE_LENGTH), unique=True)
+    title: Mapped[str] = mapped_column(String(MAX_CASE_TITLE_LENGTH))
+    content: Mapped[str] = mapped_column(Text)
+    embedding: Mapped[list[float]] = mapped_column(Vector(EMBEDDING_DIMENSION))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
