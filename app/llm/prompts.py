@@ -1,7 +1,7 @@
-"""Load versioned prompt files stored in the repository."""
+﻿"""Load versioned prompt files stored in the repository."""
 
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 from string import Template
 from typing import Final
@@ -28,11 +28,11 @@ class PromptTemplate:
         return f"{self.name}/{self.version}"
 
     def render_user(self, **values: str) -> str:
-        """Fill the user template; a missing value raises instead of passing silently."""
+        """Fill the user template; a missing value raises instead of passing."""
         return self.user.substitute(**values)
 
 
-@lru_cache(maxsize=None)
+@cache
 def load_prompt(name: str, version: str) -> PromptTemplate:
     """Read a prompt version from disk.
 
@@ -46,5 +46,12 @@ def load_prompt(name: str, version: str) -> PromptTemplate:
         system = (directory / "system.md").read_text(encoding="utf-8").strip()
         user = (directory / "user.md").read_text(encoding="utf-8").strip()
     except FileNotFoundError as error:
-        raise PromptNotFoundError(f"Prompt {name}/{version} not found in {directory}") from error
-    return PromptTemplate(name=name, version=version, system=system, user=Template(user))
+        raise PromptNotFoundError(
+            f"Prompt {name}/{version} not found in {directory}"
+        ) from error
+    return PromptTemplate(
+        name=name,
+        version=version,
+        system=system,
+        user=Template(user),
+    )

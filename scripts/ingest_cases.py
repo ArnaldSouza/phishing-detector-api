@@ -1,4 +1,4 @@
-"""Load the knowledge base cases into PostgreSQL with their embeddings.
+﻿"""Load the knowledge base cases into PostgreSQL with their embeddings.
 
 Run from the project root:
     uv run python -m scripts.ingest_cases
@@ -14,7 +14,8 @@ from app.database import SessionLocal
 from app.models import PhishingCase
 from app.rag.embeddings import DOCUMENT_TASK, embed_texts
 
-CASES_DIRECTORY: Final[Path] = Path(__file__).resolve().parents[1] / "knowledge" / "cases"
+PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parents[1]
+CASES_DIRECTORY: Final[Path] = PROJECT_ROOT / "knowledge" / "cases"
 TITLE_PREFIX: Final[str] = "# "
 
 

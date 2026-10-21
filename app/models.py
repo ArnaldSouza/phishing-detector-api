@@ -1,9 +1,8 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, String, func, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from pgvector.sqlalchemy import Vector
+from sqlalchemy import DateTime, Float, ForeignKey, String, Text, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
