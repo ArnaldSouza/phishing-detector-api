@@ -1,30 +1,20 @@
-"""Generate normalized text embeddings with the Gemini API."""
+﻿"""Generate normalized text embeddings with the Gemini API."""
 
 import math
-from functools import lru_cache
 from typing import Final
 
-from google import genai
 from google.genai import errors, types
 
 from app.config import settings
+from app.gemini import GeminiError, describe_api_error, get_client
 from app.models import EMBEDDING_DIMENSION
 
 DOCUMENT_TASK: Final[str] = "RETRIEVAL_DOCUMENT"
 QUERY_TASK: Final[str] = "RETRIEVAL_QUERY"
-RATE_LIMIT_STATUS: Final[int] = 429
 
 
-class EmbeddingError(RuntimeError):
+class EmbeddingError(GeminiError):
     """Raised when embeddings cannot be generated."""
-
-
-@lru_cache(maxsize=1)
-def _get_client() -> genai.Client:
-    """Create the Gemini client once, failing clearly if the key is missing."""
-    if not settings.gemini_api_key:
-        raise EmbeddingError("GEMINI_API_KEY is not set. Add it to your .env file.")
-    return genai.Client(api_key=settings.gemini_api_key)
 
 
 def normalize(vector: list[float]) -> list[float]:
@@ -51,14 +41,15 @@ def embed_texts(texts: list[str], task_type: str) -> list[list[float]]:
         One normalized vector per input text, in the same order.
 
     Raises:
-        EmbeddingError: If the key is missing, the free-tier limit is hit,
-            or the API returns something unexpected.
+        GeminiError: If the API key is missing.
+        EmbeddingError: If the request fails (including the free-tier
+            limit) or the API returns something unexpected.
     """
     if not texts:
         return []
 
     try:
-        response = _get_client().models.embed_content(
+        response = get_client().models.embed_content(
             model=settings.gemini_embedding_model,
             contents=texts,
             config=types.EmbedContentConfig(
@@ -67,11 +58,7 @@ def embed_texts(texts: list[str], task_type: str) -> list[list[float]]:
             ),
         )
     except errors.APIError as error:
-        if error.code == RATE_LIMIT_STATUS:
-            raise EmbeddingError(
-                "Gemini free-tier rate limit reached. Wait a minute and retry."
-            ) from error
-        raise EmbeddingError(f"Gemini embedding request failed: {error}") from error
+        raise EmbeddingError(describe_api_error(error, "embedding")) from error
 
     embeddings = response.embeddings or []
     if len(embeddings) != len(texts):
