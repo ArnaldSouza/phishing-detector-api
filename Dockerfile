@@ -27,6 +27,7 @@ COPY --chown=appuser:appuser alembic.ini ./
 COPY --chown=appuser:appuser migrations ./migrations
 COPY --chown=appuser:appuser app ./app
 COPY --chown=appuser:appuser ml/artifacts ./ml/artifacts
+COPY --chown=appuser:appuser prompts ./prompts
 
 USER appuser
 
