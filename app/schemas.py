@@ -1,4 +1,4 @@
-"""Pydantic schemas for request and response payloads."""
+﻿"""Pydantic schemas for request and response payloads."""
 
 from datetime import datetime
 
@@ -8,6 +8,8 @@ from app.security import BCRYPT_MAX_PASSWORD_BYTES
 
 MAX_URL_LENGTH = 2048
 MIN_PASSWORD_LENGTH = 8
+# Bounds the prompt size and the free-tier quota spent on a single request.
+MAX_EMAIL_TEXT_LENGTH = 10_000
 
 
 class PredictionRequest(BaseModel):
@@ -27,6 +29,39 @@ class PredictionResponse(BaseModel):
     hostname: str
     is_phishing: bool
     phishing_probability: float
+    created_at: datetime
+
+
+class AnalysisRequest(BaseModel):
+    """Incoming request to explain whether an email looks like phishing."""
+
+    email_text: str = Field(min_length=1, max_length=MAX_EMAIL_TEXT_LENGTH)
+
+    @field_validator("email_text")
+    @classmethod
+    def email_text_must_not_be_blank(cls, value: str) -> str:
+        """Reject text with no visible content; the value is returned unchanged."""
+        if not value.strip():
+            raise ValueError("Email text must not be blank")
+        return value
+
+
+class HostnameSignal(BaseModel):
+    """Classifier score for one hostname found in the email."""
+
+    hostname: str
+    phishing_probability: float
+
+
+class AnalysisResponse(BaseModel):
+    """Explanation generated for an email, with the evidence behind it."""
+
+    id: int
+    explanation: str
+    signals: list[HostnameSignal]
+    cited_slugs: list[str]
+    prompt_identifier: str
+    model: str
     created_at: datetime
 
 
