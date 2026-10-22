@@ -1,7 +1,8 @@
-from datetime import datetime
+﻿from datetime import datetime
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, Float, ForeignKey, String, Text, func
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -14,6 +15,13 @@ MAX_URL_LENGTH = 2048
 
 EMBEDDING_DIMENSION = 768
 MAX_CASE_TITLE_LENGTH = 200
+
+# A SHA-256 digest written in hexadecimal.
+SHA256_HEX_LENGTH = 64
+MAX_PROMPT_IDENTIFIER_LENGTH = 100
+MAX_MODEL_NAME_LENGTH = 100
+# DNS limit for a full hostname.
+MAX_HOSTNAME_LENGTH = 253
 
 
 class User(Base):
@@ -31,6 +39,7 @@ class User(Base):
     )
 
     predictions: Mapped[list["Prediction"]] = relationship(back_populates="user")
+    analyses: Mapped[list["Analysis"]] = relationship(back_populates="user")
 
 
 class Prediction(Base):
@@ -65,3 +74,35 @@ class PhishingCase(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class Analysis(Base):
+    """Metadata of one email analysis.
+
+    The email text and the generated explanation are deliberately not stored:
+    the email may hold third-party personal data. Only a hash is kept.
+    """
+
+    __tablename__ = "analyses"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email_hash: Mapped[str] = mapped_column(String(SHA256_HEX_LENGTH), index=True)
+    email_length: Mapped[int]
+    prompt_identifier: Mapped[str] = mapped_column(
+        String(MAX_PROMPT_IDENTIFIER_LENGTH)
+    )
+    model: Mapped[str] = mapped_column(String(MAX_MODEL_NAME_LENGTH))
+    hostnames: Mapped[list[str]] = mapped_column(ARRAY(String(MAX_HOSTNAME_LENGTH)))
+    cited_slugs: Mapped[list[str]] = mapped_column(
+        ARRAY(String(MAX_CASE_TITLE_LENGTH))
+    )
+    # None when the email has no URLs, so no score is invented.
+    max_phishing_probability: Mapped[float | None] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+
+    user: Mapped["User"] = relationship(back_populates="analyses")
