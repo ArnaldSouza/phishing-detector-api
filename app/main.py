@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
@@ -7,20 +7,20 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.ml.classifier import load_model
-from app.routers import auth, predictions
+from app.routers import analysis, auth, predictions
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Load the model at startup so a missing or stale artifact fails fast."""
     load_model()
     yield
 
 
 app = FastAPI(title="Phishing Detector API", lifespan=lifespan)
-app.include_router(predictions.router)
 app.include_router(auth.router)
 app.include_router(predictions.router)
+app.include_router(analysis.router)
 
 
 @app.get("/health")
