@@ -23,6 +23,7 @@ TEMPERATURE: Final[float] = 0.2
 
 class LLMError(GeminiError):
     """Raised when the chat model cannot produce a usable explanation."""
+    
 
 
 @dataclass(frozen=True)
@@ -81,7 +82,9 @@ def generate_explanation(
             ),
         )
     except errors.APIError as error:
-        raise LLMError(describe_api_error(error, "chat")) from error
+        raise LLMError(
+            describe_api_error(error, "chat"), status_code=error.code
+        ) from error
 
     return Explanation(
         text=_extract_text(response),

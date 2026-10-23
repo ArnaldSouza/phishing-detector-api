@@ -58,7 +58,9 @@ def embed_texts(texts: list[str], task_type: str) -> list[list[float]]:
             ),
         )
     except errors.APIError as error:
-        raise EmbeddingError(describe_api_error(error, "embedding")) from error
+        raise EmbeddingError(
+            describe_api_error(error, "embedding"), status_code=error.code
+        ) from error
 
     embeddings = response.embeddings or []
     if len(embeddings) != len(texts):

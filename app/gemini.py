@@ -20,7 +20,16 @@ RETRYABLE_STATUSES: Final[tuple[int, ...]] = (RATE_LIMIT_STATUS, UNAVAILABLE_STA
 
 
 class GeminiError(RuntimeError):
-    """Base class for failures when talking to the Gemini API."""
+    """Base class for failures when talking to the Gemini API.
+
+    Attributes:
+        status_code: HTTP status returned by Gemini, or None when the failure
+            happened before any request (for example, a missing API key).
+    """
+
+    def __init__(self, message: str, status_code: int | None = None) -> None:
+        super().__init__(message)
+        self.status_code = status_code
 
 
 def build_retry_options() -> types.HttpRetryOptions:
