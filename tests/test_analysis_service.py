@@ -122,15 +122,15 @@ def test_email_without_urls_has_no_score(
 def test_invented_slug_is_dropped_from_the_record_only(
     db_session: Session, test_user: User, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    text = "Matches [made-up-case] and [case-1]."
+    text = "Matches [made-up-case] and [case-0]."
     stub_llm(monkeypatch, text)
 
     response = analyze_email(db_session, test_user.id, EMAIL_WITH_URL)
 
     record = db_session.get(Analysis, response.id)
     assert record is not None
-    assert record.cited_slugs == ["case-1"]
-    assert response.cited_slugs == ["case-1"]
+    assert record.cited_slugs == ["case-0"]
+    assert response.cited_slugs == ["case-0"]
     assert response.explanation == text
 
 
@@ -147,3 +147,15 @@ def test_llm_failure_saves_nothing(
         analyze_email(db_session, test_user.id, EMAIL_WITH_URL)
 
     assert count_analyses(db_session) == 0
+
+
+@pytest.mark.usefixtures("seeded_cases")
+def test_only_cases_within_the_distance_limit_reach_the_llm(
+    db_session: Session, test_user: User, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls = stub_llm(monkeypatch, "No match.")
+
+    analyze_email(db_session, test_user.id, EMAIL_WITH_URL)
+
+    cases = calls[0][2]
+    assert [case.slug for case in cases] == ["case-0"]

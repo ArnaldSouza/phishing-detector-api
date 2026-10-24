@@ -2,6 +2,7 @@
 
 import hashlib
 from collections.abc import Sequence
+from typing import Final
 
 from sqlalchemy.orm import Session
 
@@ -13,6 +14,10 @@ from app.models import Analysis
 from app.rag.embeddings import QUERY_TASK, embed_texts
 from app.rag.retriever import retrieve_similar_cases
 from app.schemas import AnalysisResponse, HostnameSignal
+
+# Starting point from two sample emails (phishing cases at 0.32-0.38, an
+# ordinary email at 0.41+). Review with a larger set of real emails.
+MAX_CASE_DISTANCE: Final[float] = 0.39
 
 
 def hash_email(email_text: str) -> str:
@@ -47,9 +52,10 @@ def analyze_email(db: Session, user_id: int, email_text: str) -> AnalysisRespons
         classify_url(hostname) for hostname in extract_hostnames(email_text)
     ]
 
-    # TODO: pass max_distance once calibrated with real emails.
     query_embedding = embed_texts([email_text], QUERY_TASK)[0]
-    cases = retrieve_similar_cases(db, query_embedding)
+    cases = retrieve_similar_cases(
+        db, query_embedding, max_distance=MAX_CASE_DISTANCE
+    )
 
     explanation = generate_explanation(email_text, classifications, cases)
     cited_slugs = extract_cited_slugs(
