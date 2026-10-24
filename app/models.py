@@ -1,7 +1,7 @@
 ﻿from datetime import datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, Float, ForeignKey, String, Text, func
+from sqlalchemy import DateTime, Float, ForeignKey, Index, String, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -68,6 +68,14 @@ class PhishingCase(Base):
     """A curated phishing technique used as retrieval context for explanations."""
 
     __tablename__ = "phishing_cases"
+    __table_args__ = (
+        Index(
+            "ix_phishing_cases_embedding",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     slug: Mapped[str] = mapped_column(String(MAX_CASE_TITLE_LENGTH), unique=True)
