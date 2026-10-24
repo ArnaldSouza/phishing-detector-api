@@ -28,6 +28,11 @@ def normalize(vector: list[float]) -> list[float]:
         raise EmbeddingError("Cannot normalize a zero vector")
     return [value / norm for value in vector]
 
+def _vector_of(item: types.ContentEmbedding) -> list[float]:
+    """Return the raw values of one embedding, or raise if the API sent none."""
+    if not item.values:
+        raise EmbeddingError("Gemini returned an embedding without values.")
+    return list(item.values)
 
 def embed_texts(texts: list[str], task_type: str) -> list[list[float]]:
     """Embed several texts in a single API request.
@@ -67,4 +72,4 @@ def embed_texts(texts: list[str], task_type: str) -> list[list[float]]:
         raise EmbeddingError(
             f"Expected {len(texts)} embeddings, received {len(embeddings)}"
         )
-    return [normalize(list(item.values)) for item in embeddings]
+    return [normalize(_vector_of(item)) for item in embeddings]

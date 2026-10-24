@@ -131,6 +131,7 @@ def test_api_errors_become_clear_llm_errors(monkeypatch, error, expected):
     with pytest.raises(LLMError, match=expected) as raised:
         run()
     assert raised.value.__cause__ is error
+    assert raised.value.status_code == error.code
 
 
 def test_missing_api_key_raises_gemini_error(monkeypatch):
