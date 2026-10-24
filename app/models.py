@@ -37,9 +37,12 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-
-    predictions: Mapped[list["Prediction"]] = relationship(back_populates="user")
-    analyses: Mapped[list["Analysis"]] = relationship(back_populates="user")
+    predictions: Mapped[list["Prediction"]] = relationship(
+        back_populates="user", passive_deletes=True
+    )
+    analyses: Mapped[list["Analysis"]] = relationship(
+        back_populates="user", passive_deletes=True
+    )
 
 
 class Prediction(Base):
