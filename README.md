@@ -109,6 +109,10 @@ JWT_SECRET_KEY=<see below>
 GEMINI_API_KEY=<free key from Google AI Studio>
 ```
 
+On Windows, set `POSTGRES_HOST=127.0.0.1` instead of relying on the `localhost`
+default: resolving `localhost` can add a delay of over a minute to the first
+database connection (and to the test suite).
+
 `GEMINI_API_KEY` is optional at startup: without it `/predictions` works and
 `/analysis` answers `503`. Use the free tier without enabling billing.
 
@@ -238,7 +242,7 @@ uv sync
 uv run pytest
 ```
 
-The suite has 186 tests and never calls Gemini: the chat and embedding calls
+The suite has 192 tests and never calls Gemini: the chat and embedding calls
 are replaced by fakes, so it needs no API key and spends no quota.
 
 Covers: feature extraction invariants (including a regression test asserting
