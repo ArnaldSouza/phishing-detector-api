@@ -2,6 +2,7 @@
 
 from types import SimpleNamespace
 
+import httpx
 import pytest
 from google.genai import errors, types
 
@@ -139,3 +140,24 @@ def test_missing_api_key_raises_gemini_error(monkeypatch):
     monkeypatch.setattr(settings, "gemini_api_key", None)
     with pytest.raises(GeminiError, match="GEMINI_API_KEY"):
         run()
+
+
+NETWORK_ERRORS = [
+    (httpx.ConnectTimeout("https://example.invalid/?key=SECRET"), "in time"),
+    (httpx.ReadTimeout("https://example.invalid/?key=SECRET"), "in time"),
+    (httpx.ConnectError("https://example.invalid/?key=SECRET"), "Could not reach"),
+]
+
+
+@pytest.mark.parametrize(
+    ("error", "expected"),
+    NETWORK_ERRORS,
+    ids=["connect-timeout", "read-timeout", "connect-error"],
+)
+def test_network_errors_become_llm_errors(monkeypatch, error, expected):
+    install_fake(monkeypatch, error=error)
+    with pytest.raises(LLMError, match=expected) as raised:
+        run()
+    assert "SECRET" not in str(raised.value)
+    assert raised.value.status_code is None
+    assert raised.value.__cause__ is error

@@ -4,10 +4,16 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Final
 
+import httpx
 from google.genai import errors, types
 
 from app.config import settings
-from app.gemini import GeminiError, describe_api_error, get_client
+from app.gemini import (
+    GeminiError,
+    describe_api_error,
+    describe_network_error,
+    get_client,
+)
 from app.llm.prompt_builder import build_user_message
 from app.llm.prompts import load_prompt
 from app.ml.classifier import Classification
@@ -85,6 +91,8 @@ def generate_explanation(
         raise LLMError(
             describe_api_error(error, "chat"), status_code=error.code
         ) from error
+    except httpx.HTTPError as error:
+        raise LLMError(describe_network_error(error)) from error
 
     return Explanation(
         text=_extract_text(response),

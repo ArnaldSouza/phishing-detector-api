@@ -3,6 +3,7 @@
 from functools import lru_cache
 from typing import Final
 
+import httpx
 from google import genai
 from google.genai import errors, types
 
@@ -18,6 +19,9 @@ RETRY_INITIAL_DELAY_SECONDS: Final[float] = 2.0
 RETRY_MAX_DELAY_SECONDS: Final[float] = 10.0
 RETRYABLE_STATUSES: Final[tuple[int, ...]] = (RATE_LIMIT_STATUS, UNAVAILABLE_STATUS)
 
+# Per attempt, in milliseconds (the SDK unit). Stops a stalled call from
+# holding a database connection while the request waits for Gemini.
+REQUEST_TIMEOUT_MS: Final[int] = 30_000
 
 class GeminiError(RuntimeError):
     """Base class for failures when talking to the Gemini API.
@@ -52,7 +56,10 @@ def get_client() -> genai.Client:
         raise GeminiError("GEMINI_API_KEY is not set. Add it to your .env file.")
     return genai.Client(
         api_key=settings.gemini_api_key,
-        http_options=types.HttpOptions(retry_options=build_retry_options()),
+        http_options=types.HttpOptions(
+            timeout=REQUEST_TIMEOUT_MS,
+            retry_options=build_retry_options(),
+        ),
     )
 
 
@@ -68,3 +75,10 @@ def describe_api_error(error: errors.APIError, action: str) -> str:
     if error.code is not None and error.code >= SERVER_ERROR_MIN_STATUS:
         return "Gemini is overloaded or unavailable. Try again shortly."
     return f"Gemini {action} request failed: {error}"
+
+
+def describe_network_error(error: httpx.HTTPError) -> str:
+    """Turn a network failure (timeout, connection) into a clear message."""
+    if isinstance(error, httpx.TimeoutException):
+        return "Gemini did not answer in time. Try again shortly."
+    return "Could not reach Gemini. Try again shortly."

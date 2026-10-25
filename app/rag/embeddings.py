@@ -3,10 +3,16 @@
 import math
 from typing import Final
 
+import httpx
 from google.genai import errors, types
 
 from app.config import settings
-from app.gemini import GeminiError, describe_api_error, get_client
+from app.gemini import (
+    GeminiError,
+    describe_api_error,
+    describe_network_error,
+    get_client,
+)
 from app.models import EMBEDDING_DIMENSION
 
 DOCUMENT_TASK: Final[str] = "RETRIEVAL_DOCUMENT"
@@ -66,7 +72,9 @@ def embed_texts(texts: list[str], task_type: str) -> list[list[float]]:
         raise EmbeddingError(
             describe_api_error(error, "embedding"), status_code=error.code
         ) from error
-
+    except httpx.HTTPError as error:
+        raise EmbeddingError(describe_network_error(error)) from error
+    
     embeddings = response.embeddings or []
     if len(embeddings) != len(texts):
         raise EmbeddingError(

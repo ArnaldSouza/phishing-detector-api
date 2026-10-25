@@ -3,6 +3,7 @@
 import math
 from types import SimpleNamespace
 
+import httpx
 import pytest
 from google.genai import errors
 
@@ -115,3 +116,24 @@ def test_response_without_values_is_an_embedding_error(monkeypatch):
     install_fake(monkeypatch, response=make_response(None))
     with pytest.raises(EmbeddingError):
         embed_texts(["a"], QUERY_TASK)
+
+
+NETWORK_ERRORS = [
+    (httpx.ConnectTimeout("https://example.invalid/?key=SECRET"), "in time"),
+    (httpx.ReadTimeout("https://example.invalid/?key=SECRET"), "in time"),
+    (httpx.ConnectError("https://example.invalid/?key=SECRET"), "Could not reach"),
+]
+
+
+@pytest.mark.parametrize(
+    ("error", "expected"),
+    NETWORK_ERRORS,
+    ids=["connect-timeout", "read-timeout", "connect-error"],
+)
+def test_network_errors_become_embedding_errors(monkeypatch, error, expected):
+    install_fake(monkeypatch, error=error)
+    with pytest.raises(EmbeddingError, match=expected) as raised:
+        embed_texts(["a"], QUERY_TASK)
+    assert "SECRET" not in str(raised.value)
+    assert raised.value.status_code is None
+    assert raised.value.__cause__ is error
