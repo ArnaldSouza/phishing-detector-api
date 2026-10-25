@@ -281,9 +281,12 @@ leak configuration or the email text.
 ## Known Limitations
 
 - **The email text is sent to Google** for embedding and for the explanation.
-  On the free tier Google's terms may allow using submitted content to improve
-  its products; check the current terms before use. Do not submit real emails
-  that contain other people's personal data.
+  On the free tier (unpaid quota), Google uses submitted content to improve its
+  products and human reviewers may read it, and its terms say not to send
+  sensitive, confidential or personal information. Do not submit real emails
+  that contain other people's personal data. The terms also require users to be
+  18 or older and, for users in the EEA, Switzerland or the UK, a paid service;
+  see the [Gemini API Additional Terms](https://ai.google.dev/gemini-api/terms).
 - The retrieval cutoff (cosine distance 0.39) was set from a handful of sample
   emails, so treat it as a starting point rather than a calibrated value. A
   subtle phishing email with no urgency or links may fall outside the cutoff
